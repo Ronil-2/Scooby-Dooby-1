@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bubble Shooter</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #282c34;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            background-color: #000;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="320" height="480"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let bubbles = [];
+        let shooter;
+        let isGameOver = false;        
+        const bubbleRadius = 10;
+        const shooterRadius = 12;
+        const shooterSpeed = 5;
+        const bubbleColors = ['#FF5733', '#e3ff00', '#33FF57', '#3357FF', '#11ff00', '#ff00f1'];
+
+        class Bubble {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, bubbleRadius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
+
+        class Shooter {
+            constructor(x, y, angle) {
+                this.x = x;
+                this.y = y;
+                this.angle = angle;
+                this.color = bubbleColors[Math.floor(Math.random() * bubbleColors.length)];
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, shooterRadius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.closePath();
+            }
+
+            move(angle) {
+                this.angle = angle;
+            }
+
+            shoot() {
+                const bubble = new Bubble(this.x, this.y, this.color);
+                bubble.dx = shooterSpeed * Math.cos(this.angle);
+                bubble.dy = shooterSpeed * Math.sin(this.angle);
+                bubbles.push(bubble);
+                this.color = bubbleColors[Math.floor(Math.random() * bubbleColors.length)];
+            }
+        }
+
+        function drawBubbles() {
+            bubbles.forEach(bubble => {
+                bubble.x += bubble.dx;
+                bubble.y += bubble.dy;
+                bubble.draw();
+            });
+        }
+
+        function detectCollisions() {
+            for (let i = 0; i < bubbles.length; i++) {
+                for (let j = i + 1; j < bubbles.length; j++) {
+                    const dx = bubbles[i].x - bubbles[j].x;
+                    const dy = bubbles[i].y - bubbles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < bubbleRadius * 2) {
+                        
+                    }
+                }
+                if (bubbles[i].y < bubbleRadius || bubbles[i].y > canvas.height - bubbleRadius) {
+                    
+                }
+            }
+        }
+
+
+        function update() {
+            if (isGameOver) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            shooter.draw();
+            drawBubbles();
+            detectCollisions();
+            requestAnimationFrame(update);
+        }
+
+        function startGame() {
+            isGameOver = false;
+            bubbles = [];
+            shooter = new Shooter(canvas.width / 2, canvas.height - shooterRadius - 10, Math.PI / 2);
+            update();
+        }
+
+        canvas.addEventListener('mousemove', event => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+            const angle = Math.atan2(mouseY - shooter.y, mouseX - shooter.x);
+            shooter.move(angle);
+        });
+
+        canvas.addEventListener('click', () => {
+            shooter.shoot();
+        });
+
+        startGame();
+    </script>
+</body>
+</html>
